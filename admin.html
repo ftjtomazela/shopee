@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin • Tomazela Piscinas</title>
+    <style>
+        :root {
+            --primary: #006994;
+            --secondary: #00b4d8;
+            --dark: #0f0f23;
+            --card: #16213e;
+            --text: #e0e0e0;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card);
+            padding: 18px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .topbar h2 { font-size: 1.2em; color: white; }
+        .topbar .user-email { color: #888; font-size: 0.85em; }
+
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+
+        .btn-sm { padding: 6px 14px; font-size: 0.78em; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #004d70; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #27ae60; }
+        .btn-warning { background: var(--warning); color: var(--dark); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.2); }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); }
+
+        .container {
+            max-width: 1000px;
+            margin: 25px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 22px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .card h3 { color: white; margin-bottom: 18px; font-size: 1.1em; }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .stat-card .stat-icon { font-size: 2em; margin-bottom: 8px; }
+        .stat-card .stat-value { font-size: 2em; font-weight: 900; color: white; }
+        .stat-card .stat-label { color: #888; font-size: 0.8em; margin-top: 4px; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+            font-weight: 600;
+            font-size: 0.82em;
+        }
+
+        .form-group small { color: #666; font-weight: normal; }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 11px;
+            background: rgba(255,255,255,0.03);
+            border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .form-group textarea { resize: vertical; min-height: 55px; }
+
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255,255,255,0.04);
+            gap: 12px;
+        }
+
+        .product-item:hover { background: rgba(255,255,255,0.05); }
+        .product-item-info { flex: 1; }
+        .product-item-name { font-weight: 700; color: white; }
+        .product-item-meta { font-size: 0.8em; color: #888; margin-top: 3px; }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 15px;
+            font-size: 0.7em;
+            font-weight: 700;
+        }
+
+        .tag-video { background: rgba(231,76,60,0.3); color: #ff6b6b; }
+        .tag-image { background: rgba(0,180,216,0.3); color: var(--secondary); }
+
+        .sync-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 14px 22px;
+            border-radius: 10px;
+            font-weight: 600;
+            z-index: 9999;
+            display: none;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15,15,35,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .spinner-big {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 15px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .form-row, .stats-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <!-- LOADING -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-big"></div> Carregando...
+    </div>
+
+    <!-- TOPBAR -->
+    <div class="topbar" id="topbar" style="display:none;">
+        <div>
+            <h2>⚙️ Painel Admin</h2>
+            <span class="user-email" id="userEmail"></span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="index.html" class="btn btn-outline btn-sm" target="_blank">🏠 Ver Site</a>
+            <button class="btn btn-danger btn-sm" onclick="logout()">🚪 Sair</button>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO -->
+    <div class="container" id="mainContent" style="display:none;">
+
+        <!-- ESTATÍSTICAS -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">Total de Produtos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🧪</div>
+                <div class="stat-value" id="statTratamento">0</div>
+                <div class="stat-label">Tratamento</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🧹</div>
+                <div class="stat-value" id="statLimpeza">0</div>
+                <div class="stat-label">Limpeza</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎬</div>
+                <div class="stat-value" id="statVideo">0</div>
+                <div class="stat-label">Com Vídeo</div>
+            </div>
+        </div>
+
+        <!-- LINKS SOCIAIS -->
+        <div class="card">
+            <h3>🔗 Redes Sociais (aparecem no site público)</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>🎵 TikTok</label>
+                    <input type="text" id="tiktokLink" placeholder="https://www.tiktok.com/@seuuser">
+                </div>
+                <div class="form-group">
+                    <label>💬 WhatsApp</label>
+                    <input type="text" id="whatsappLink" placeholder="https://wa.me/5511999999999">
+                </div>
+                <div class="form-group">
+                    <label>📷 Instagram</label>
+                    <input type="text" id="instagramLink" placeholder="https://www.instagram.com/seuuser">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="salvarLinks()">💾 Salvar Links</button>
+        </div>
+
+        <!-- ADICIONAR PRODUTO -->
+        <div class="card">
+            <h3>➕ Novo Produto</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nome *</label>
+                    <input type="text" id="prodName" placeholder="Ex: Cloro Multi Ação 2kg">
+                </div>
+                <div class="form-group">
+                    <label>Categoria *</label>
+                    <select id="prodCategory">
+                        <option value="tratamento">🧪 Tratamento de Água</option>
+                        <option value="limpeza">🧹 Limpeza</option>
+                        <option value="acessorios">🔧 Acessórios</option>
+                        <option value="capa">🛡️ Capas e Coberturas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Preço *</label>
+                    <input type="text" id="prodPrice" placeholder="R$ 39,90">
+                </div>
+                <div class="form-group">
+                    <label>Preço antigo</label>
+                    <input type="text" id="prodOldPrice" placeholder="R$ 59,90 (opcional)">
+                </div>
+                <div class="form-group">
+                    <label>📷 URL da Imagem</label>
+                    <input type="text" id="prodImage" placeholder="https://...imagem.jpg">
+                </div>
+                <div class="form-group">
+                    <label>🎬 URL do Vídeo <small>(prioridade)</small></label>
+                    <input type="text" id="prodVideo" placeholder="https://...video.mp4">
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>🔗 Link Shopee *</label>
+                    <input type="text" id="prodLink" placeholder="https://shope.ee/...">
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Descrição *</label>
+                    <textarea id="prodDesc" rows="2" placeholder="Descreva o produto..."></textarea>
+                </div>
+            </div>
+            <button class="btn btn-success" onclick="addProduct()" style="margin-top:10px;">💾 Salvar Produto</button>
+        </div>
+
+        <!-- LISTA DE PRODUTOS -->
+        <div class="card">
+            <h3>📋 Produtos Cadastrados</h3>
+            <div class="sync-btns" style="margin-bottom:15px;">
+                <button class="btn btn-warning btn-sm" onclick="exportarJSON()">📥 Exportar JSON</button>
+                <button class="btn btn-outline btn-sm" onclick="document.getElementById('importFile').click()">📤 Importar JSON</button>
+                <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importarJSON(event)">
+            </div>
+            <div id="productsList"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db, produtosCollection, linksDoc, onAuthStateChanged, signOut, addDoc, deleteDoc, doc, onSnapshot, orderBy, query, serverTimestamp, getDoc, setDoc } from './js/firebase-config.js';
+
+        let todosProdutos = [];
+
+        // Toast
+        function toast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2500);
+        }
+
+        // Verificar autenticação
+        onAuthStateChanged(auth, user => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            if (user) {
+                document.getElementById('topbar').style.display = 'flex';
+                document.getElementById('mainContent').style.display = 'block';
+                document.getElementById('userEmail').textContent = '📧 ' + user.email;
+                carregarDados();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Logout
+        window.logout = function() {
+            signOut(auth).then(() => {
+                window.location.href = 'login.html';
+            });
+        };
+
+        // Carregar dados
+        function carregarDados() {
+            // Links sociais
+            getDoc(linksDoc).then(docSnap => {
+                if (docSnap.exists()) {
+                    const d = docSnap.data();
+                    document.getElementById('tiktokLink').value = d.tiktok || '';
+                    document.getElementById('whatsappLink').value = d.whatsapp || '';
+                    document.getElementById('instagramLink').value = d.instagram || '';
+                }
+            });
+
+            // Produtos em tempo real
+            const q = query(produtosCollection, orderBy('createdAt', 'desc'));
+            onSnapshot(q, snapshot => {
+                todosProdutos = [];
+                snapshot.forEach(docSnap => {
+                    todosProdutos.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderProducts();
+                updateStats();
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').textContent = todosProdutos.length;
+            document.getElementById('statTratamento').textContent = todosProdutos.filter(p => p.category === 'tratamento').length;
+            document.getElementById('statLimpeza').textContent = todosProdutos.filter(p => p.category === 'limpeza').length;
+            document.getElementById('statVideo').textContent = todosProdutos.filter(p => p.video && p.video.trim()).length;
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('productsList');
+            if (todosProdutos.length === 0) {
+                container.innerHTML = '<p style="color:#888;text-align:center;padding:25px;">Nenhum produto cadastrado.</p>';
+                return;
+            }
+            container.innerHTML = todosProdutos.map((p, i) => `
+                <div class="product-item">
+                    <div class="product-item-info">
+                        <div class="product-item-name">${p.name}</div>
+                        <div class="product-item-meta">
+                            ${p.price} | 
+                            ${p.video ? '<span class="tag tag-video">🎬 Vídeo</span>' : '<span class="tag tag-image">📷 Imagem</span>'}
+                            | ${p.link.substring(0, 35)}...
+                        </div>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="window.deletarProduto('${p.id}')">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        window.deletarProduto = async function(id) {
+            if (confirm('⚠️ Remover este produto?')) {
+                await deleteDoc(doc(db, 'produtos', id));
+                toast('🗑️ Produto removido!');
+            }
+        };
+
+        window.addProduct = async function() {
+            const name = document.getElementById('prodName').value.trim();
+            const price = document.getElementById('prodPrice').value.trim();
+            const oldPrice = document.getElementById('prodOldPrice').value.trim();
+            const image = document.getElementById('prodImage').value.trim();
+            const video = document.getElementById('prodVideo').value.trim();
+            const link = document.getElementById('prodLink').value.trim();
+            const desc = document.getElementById('prodDesc').value.trim();
+            const category = document.getElementById('prodCategory').value;
+
+            if (!name || !price || !link || !desc) {
+                alert('❌ Preencha os campos obrigatórios (*)');
+                return;
+            }
+
+            if (!image && !video) {
+                alert('❌ Informe pelo menos uma URL de imagem ou vídeo!');
+                return;
+            }
+
+            await addDoc(produtosCollection, {
+                name, price, oldPrice, image, video, link,
+                description: desc, category,
+                createdAt: serverTimestamp()
+            });
+
+            // Limpar
+            ['prodName','prodPrice','prodOldPrice','prodImage','prodVideo','prodLink','prodDesc'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+
+            toast('✅ Produto adicionado!');
+        };
+
+        window.salvarLinks = async function() {
+            const links = {
+                tiktok: document.getElementById('tiktokLink').value.trim(),
+                whatsapp: document.getElementById('whatsappLink').value.trim(),
+                instagram: document.getElementById('instagramLink').value.trim()
+            };
+            await setDoc(linksDoc, links);
+            toast('🔗 Links salvos!');
+        };
+
+        window.exportarJSON = function() {
+            const blob = new Blob([JSON.stringify(todosProdutos, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'produtos-tomazela-' + new Date().toISOString().slice(0,10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            toast('📥 Exportado!');
+        };
+
+        window.importarJSON = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (Array.isArray(data) && confirm(`📤 ${data.length} produtos. Importar?`)) {
+                        for (const p of data) {
+                            const { id, ...produto } = p;
+                            await addDoc(produtosCollection, { ...produto, createdAt: serverTimestamp() });
+                        }
+                        toast('📤 Produtos importados!');
+                    }
+                } catch(err) {
+                    alert('Arquivo inválido.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        };
+    </script>
+</body>
+</html>
